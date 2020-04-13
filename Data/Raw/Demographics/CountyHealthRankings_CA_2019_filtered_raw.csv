@@ -1,0 +1,60 @@
+﻿FIPS,State,County,Median Household Income,Population,% African American,% Hispanic,% Rural,% Smokers,% Uninsured
+06000,California,,71785,39536653,5.6,39.1,5.0,11,8
+06001,California,Alameda,95550,1663190,10.5,22.5,0.4,11,5
+06003,California,Alpine,55755,1120,0.4,11.1,100.0,15,7
+06005,California,Amador,60588,38626,2.3,14.1,60.4,11,6
+06007,California,Butte,48634,229294,1.5,16.4,18.9,14,7
+06009,California,Calaveras,58536,45670,0.8,12.1,75.4,12,6
+06011,California,Colusa,53595,21805,1.0,59.6,31.7,12,11
+06013,California,Contra Costa,95062,1147439,8.7,25.7,0.8,10,6
+06015,California,Del Norte,39996,27470,2.9,19.1,33.7,15,8
+06017,California,El Dorado,78464,188987,0.9,12.8,34.7,11,5
+06019,California,Fresno,51452,989255,4.6,53.2,10.8,14,9
+06021,California,Glenn,49979,28094,0.8,41.9,40.9,14,10
+06023,California,Humboldt,46123,136754,1.2,11.7,29.8,15,8
+06025,California,Imperial,43413,182830,2.5,84.3,17.4,13,8
+06027,California,Inyo,53528,18026,0.9,22.0,46.4,12,9
+06029,California,Kern,49904,893119,5.2,53.4,10.2,16,8
+06031,California,Kings,55076,150101,6.0,54.8,10.9,15,8
+06033,California,Lake,45797,64246,1.8,20.6,33.1,15,9
+06035,California,Lassen,58776,31163,7.9,19.0,70.5,14,5
+06037,California,Los Angeles,64912,10163507,8.0,48.6,0.6,11,11
+06039,California,Madera,50783,156890,3.3,58.0,32.9,14,10
+06041,California,Marin,112735,260955,2.5,16.1,6.5,10,5
+06043,California,Mariposa,52387,17569,1.0,11.4,100.0,12,8
+06045,California,Mendocino,50453,88018,0.8,25.4,45.2,14,10
+06047,California,Merced,48036,272673,3.0,59.6,14.3,14,8
+06049,California,Modoc,40970,8859,1.0,14.6,70.0,13,10
+06051,California,Mono,60318,14168,0.7,27.5,45.8,13,10
+06053,California,Monterey,70294,437907,2.6,58.8,9.8,12,11
+06055,California,Napa,83881,140973,2.0,34.3,13.4,11,7
+06057,California,Nevada,64901,99814,0.5,9.5,42.1,12,7
+06059,California,Orange,86031,3190400,1.6,34.2,0.1,10,8
+06061,California,Placer,81366,386166,1.6,14.0,13.8,10,5
+06063,California,Plumas,51756,18742,1.0,8.9,74.0,12,7
+06065,California,Riverside,63776,2423266,6.1,49.1,4.6,12,10
+06067,California,Sacramento,62959,1530615,9.8,23.3,2.1,13,6
+06069,California,San Benito,77200,60310,0.8,59.9,24.0,11,7
+06071,California,San Bernardino,60270,2157404,8.2,53.4,4.7,13,9
+06073,California,San Diego,76048,3337685,4.7,33.9,3.3,11,8
+06075,California,San Francisco,109601,884363,5.0,15.2,0.0,10,5
+06077,California,San Joaquin,60950,745424,7.1,41.6,8.5,12,7
+06079,California,San Luis Obispo,70634,283405,1.7,22.6,16.6,11,7
+06081,California,San Mateo,115908,771410,2.3,24.5,1.9,9,5
+06083,California,Santa Barbara,70651,448150,1.8,45.6,5.0,11,10
+06085,California,Santa Clara,118468,1938153,2.3,25.6,1.1,8,5
+06087,California,Santa Cruz,76633,275897,0.9,33.9,12.0,12,7
+06089,California,Shasta,51207,179921,1.0,10.1,29.3,14,7
+06091,California,Sierra,49495,2999,0.2,11.0,99.7,12,7
+06093,California,Siskiyou,44013,43853,1.3,12.6,65.8,15,8
+06095,California,Solano,75931,445458,13.8,26.5,3.7,12,6
+06097,California,Sonoma,79511,504217,1.6,27.0,12.4,11,8
+06099,California,Stanislaus,58925,547899,2.6,46.3,8.0,13,7
+06101,California,Sutter,54102,96648,2.1,31.0,14.8,13,9
+06103,California,Tehama,41819,63926,0.8,25.2,51.5,15,8
+06105,California,Trinity,40676,12709,0.6,7.3,100.0,15,9
+06107,California,Tulare,46377,464493,1.2,64.7,15.5,16,10
+06109,California,Tuolumne,58776,54248,1.8,12.5,49.0,12,6
+06111,California,Ventura,82436,854223,1.7,42.9,3.1,11,10
+06113,California,Yolo,64900,219116,2.4,31.8,6.9,12,7
+06115,California,Yuba,53822,77031,3.5,28.3,26.2,15,7
