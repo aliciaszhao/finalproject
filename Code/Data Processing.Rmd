@@ -16,213 +16,58 @@ library(lubridate)
 library(rvest)
 
 #Upload air quality datasets 
+NO2 <- read.csv ("../Data/Raw/EPAair_NO2_2013to2017_raw.csv")
+O3 <- read.csv ("../Data/Raw/EPAair_O3_2013to2017_raw.csv")
+PM25 <- read.csv ("../Data/Raw/EPAair_PM25_2013to2017_raw.csv")
 
-# Upload data for NO2. 
-
-NO2.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2013_raw.csv")
-NO2.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2014_raw.csv")
-NO2.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2015_raw.csv")
-NO2.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2016_raw.csv")
-NO2.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2017_raw.csv")
-
-
-# Upload data for O3. 
-
-O3.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2013_raw.csv")
-O3.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2014_raw.csv")
-O3.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2015_raw.csv")
-O3.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2016_raw.csv")
-O3.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2017_raw.csv")
-
-
-# Upload data for PM2.5. 
-
-PM25.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2013_raw.csv")
-PM25.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2014_raw.csv")
-PM25.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2015_raw.csv")
-PM25.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2016_raw.csv")
-PM25.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2017_raw.csv")
-
-```
-
-
-```{r}
-# Check structure, convert date for NO2 data. 
-str(NO2.2013)
-NO2.2013$Date <- as.Date(NO2.2013$Date, format = "%m/%d/%Y")
-
-str(NO2.2014)
-NO2.2014$Date <- as.Date(NO2.2014$Date, format = "%m/%d/%Y")
-
-str(NO2.2015)
-NO2.2015$Date <- as.Date(NO2.2015$Date, format = "%m/%d/%Y")
-
-str(NO2.2016)
-NO2.2016$Date <- as.Date(NO2.2016$Date, format = "%m/%d/%Y")
-
-str(NO2.2017)
-NO2.2017$Date <- as.Date(NO2.2017$Date, format = "%m/%d/%Y")
-
-# Check structure, convert date for O3 data. 
-
-str(O3.2013)
-O3.2013$Date <- as.Date(O3.2013$Date, format = "%m/%d/%Y")
-
-str(O3.2014)
-O3.2014$Date <- as.Date(O3.2014$Date, format = "%m/%d/%Y")
-
-str(O3.2015)
-O3.2015$Date <- as.Date(O3.2015$Date, format = "%m/%d/%Y")
-
-str(O3.2016)
-O3.2016$Date <- as.Date(O3.2016$Date, format = "%m/%d/%Y")
-
-str(O3.2017)
-O3.2017$Date <- as.Date(O3.2017$Date, format = "%m/%d/%Y")
-
-# Check structure, convert date for PM2.5 data. 
-
-str(PM25.2013)
-PM25.2013$Date <- as.Date(PM25.2013$Date, format = "%m/%d/%Y")
-
-str(PM25.2014)
-PM25.2014$Date <- as.Date(PM25.2014$Date, format = "%m/%d/%Y")
-
-str(PM25.2015)
-PM25.2015$Date <- as.Date(PM25.2015$Date, format = "%m/%d/%Y")
-
-str(PM25.2016)
-PM25.2016$Date <- as.Date(PM25.2016$Date, format = "%m/%d/%Y")
-
-str(PM25.2017)
-PM25.2017$Date <- as.Date(PM25.2017$Date, format = "%m/%d/%Y")
+# Convert to date 
+NO2$Date <- as.Date(NO2$Date, format = "%m/%d/%Y")
+O3$Date <- as.Date(O3$Date, format = "%m/%d/%Y")
+PM25$Date <- as.Date(PM25$Date, format = "%m/%d/%Y")
 
 ```
 
 ```{r}
-# Combine NO2 datasets. select relevant columns: Date, Site.ID, Daily.Max.1.hour.NO2.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY. Add column for Month and Year. 
+# Select relevant columns: Date, Site.ID, Daily.Max.1.hour.NO2.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY. Add column for Month and Year. Save processed data.
 
-NO2.AllYears <- rbind(NO2.2013, NO2.2014, NO2.2015, NO2.2016, NO2.2017)
-
-NO2.Subset <- NO2.AllYears %>%
+NO2.Subset <- NO2 %>%
   select (Date, Site.ID, Daily.Max.1.hour.NO2.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY,
          COUNTY_CODE) %>%
   mutate (Month = month(Date)) %>%
   mutate (Year = year(Date))
-
 write.csv(NO2.Subset, row.names = FALSE, 
           file ="../Data/Processed/EPAair_NO2_Processed.csv")
 
-# Combine O3 datasets. select relevant columns: Date, Site.ID, Daily.Max.1.hour.NO2.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY.Add column for Month and Year. 
 
-O3.AllYears<- rbind(O3.2013, O3.2014, O3.2015, O3.2016, O3.2017)
-
-O3.Subset <- O3.AllYears %>%
+O3.Subset <- O3 %>%
   select(Date, Site.ID, Daily.Max.8.hour.Ozone.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY,
          COUNTY_CODE) %>%
   mutate (Month = month(Date)) %>%
   mutate (Year = year(Date))
-
 write.csv(O3.Subset, row.names = FALSE, 
           file ="../Data/Processed/EPAair_O3_Processed.csv")
 
-# Combine PM2.5 datasets. select relevant columns: Date, Site.ID, Daily.Max.1.hour.NO2.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY.Add column for Month and Year. 
-
-PM25.AllYears<- rbind(PM25.2013, PM25.2014, PM25.2015, PM25.2016, PM25.2017)
-
-PM25.Subset <- PM25.AllYears %>%
+PM25.Subset <- PM25 %>%
   select(Date, Site.ID, Daily.Mean.PM2.5.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY,
          COUNTY_CODE) %>%
   mutate (Month = month(Date)) %>%
   mutate (Year = year(Date))
-
 write.csv(PM25.Subset, row.names = FALSE, 
           file ="../Data/Processed/EPAair_PM25_Processed.csv")
-```
-
-```{r}
-# Upload asthma datasets for adults
-
-Asthma.Adults.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2013_raw.csv")
-Asthma.Adults.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2014_raw.csv")
-Asthma.Adults.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2015_raw.csv")
-Asthma.Adults.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2016_raw.csv")
-Asthma.Adults.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2017_raw.csv")
-
-# Upload asthma datasets for children
-Asthma.Children.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2013_raw.csv")
-Asthma.Children.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2014_raw.csv")
-Asthma.Children.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2015_raw.csv")
-Asthma.Children.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2016_raw.csv")
-Asthma.Children.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2017_raw.csv")
-
-# Upload asthma datasets for Black populations. 
-Asthma.Black.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Black_2013_raw.csv")
-Asthma.Black.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Black_2014_raw.csv")
-Asthma.Black.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Black_2015_raw.csv")
-Asthma.Black.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Black_2016_raw.csv")
-Asthma.Black.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Black_2017_raw.csv")
 
 ```
 
 ```{r}
-# Check structure for adult asthma. Add year column. 
+# Upload asthma datasets 
 
-str(Asthma.Adults.2013)
-Asthma.Adults.2013$Year <- 2013
+Asthma.Adults <- read.csv ("../Data/Raw/TrackingCA_Asthma_ERVisits_Adults_2013to2017_raw.csv")
+Asthma.Children <- read.csv ("../Data/Raw/TrackingCA_Asthma_ERVisits_Children_2013to2017_raw.csv")
 
-str(Asthma.Adults.2014)
-Asthma.Adults.2014$Year <- 2014
-
-str(Asthma.Adults.2015)
-Asthma.Adults.2015$Year <- 2015
-
-str(Asthma.Adults.2016)
-Asthma.Adults.2016$Year <- 2016
-
-str(Asthma.Adults.2017)
-Asthma.Adults.2017$Year <- 2017
-
-
-# Check structure for children asthma. Add year column. 
-
-str(Asthma.Children.2013)
-Asthma.Children.2013$Year <- 2013
-
-str(Asthma.Children.2014)
-Asthma.Children.2014$Year <- 2014
-
-str(Asthma.Children.2015)
-Asthma.Children.2015$Year <- 2015
-
-str(Asthma.Children.2016)
-Asthma.Children.2016$Year <- 2016
-
-str(Asthma.Children.2017)
-Asthma.Children.2017$Year <- 2017
-
-
-# Check structure for Black asthma. Add year column. 
-
-str(Asthma.Black.2013)
-Asthma.Black.2013$Year <- 2013
-
-str(Asthma.Black.2014)
-Asthma.Black.2014$Year <- 2014
-
-str(Asthma.Black.2015)
-Asthma.Black.2015$Year <- 2015
-
-str(Asthma.Black.2016)
-Asthma.Black.2016$Year <- 2016
-
-str(Asthma.Black.2017)
-Asthma.Black.2017$Year <- 2017
 ```
+
 
 ```{r}
 # Data scrape to get zipcodes and corresponding counties.
-
 url <- "https://www.centralstationmarketing.com/internet-marketing/tools/zip-code-manager.html?state=CA&county=all&city="
 webpage <- read_html(url)
 
@@ -235,27 +80,22 @@ County <- webpage %>%
 
 ZipCode.County <- data.frame(Zip.Code, County) 
 
-# Combine Adult asthma datasets. Convert zipcode to COUNTY 
-Asthma.Adults.AllYears <- rbind(Asthma.Adults.2013, Asthma.Adults.2014, Asthma.Adults.2015, Asthma.Adults.2016,Asthma.Adults.2017)
+# Convert zipcode to COUNTY 
+str(Asthma.Adults$Zip.Code)
+Asthma.Adults$Zip.Code <- as.character(Asthma.Adults$Zip.Code)
 
-str(Asthma.Adults.AllYears$Zip.Code)
-Asthma.Adults.AllYears$Zip.Code <- as.character(Asthma.Adults.AllYears$Zip.Code)
-
-Asthma.Adults.County <- Asthma.Adults.AllYears %>%
+Asthma.Adults.County <- Asthma.Adults %>%
   left_join(ZipCode.County) %>%
   group_by(Year, County) %>%
   summarize (Mean.Incidence.Adults = mean(Incidence))
-
 write.csv(Asthma.Adults.County, row.names = FALSE, 
           file ="../Data/Processed/TrackingCA_Asthma_Adults_Processed.csv")
 
 # Combine Children asthma datasets. Convert zipcode to COUNTY 
-Asthma.Children.AllYears <- rbind(Asthma.Children.2013, Asthma.Children.2014, Asthma.Children.2015, Asthma.Children.2016,Asthma.Children.2017)
+str(Asthma.Children$Zip.Code)
+Asthma.Children$Zip.Code <- as.character(Asthma.Children$Zip.Code)
 
-str(Asthma.Children.AllYears$Zip.Code)
-Asthma.Children.AllYears$Zip.Code <- as.character(Asthma.Children.AllYears$Zip.Code)
-
-Asthma.Children.County <- Asthma.Children.AllYears %>%
+Asthma.Children.County <- Asthma.Children %>%
   left_join(ZipCode.County) %>%
   group_by(Year, County) %>%
   summarize (Mean.Incidence.Children = mean(Incidence))

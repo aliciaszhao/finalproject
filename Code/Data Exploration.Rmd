@@ -5,26 +5,243 @@ date: "3/31/2020"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+Upload library packages
+```{r}
+getwd()
+library(tidyverse)
+library(lubridate)
+library(rvest)
+
 ```
 
-## R Markdown
+Upload data for air quality datasets. 
+```{r}
+# Upload data for NO2. 
+NO2.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2013_raw.csv")
+NO2.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2014_raw.csv")
+NO2.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2015_raw.csv")
+NO2.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2016_raw.csv")
+NO2.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2017_raw.csv")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Upload data for O3. 
+O3.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2013_raw.csv")
+O3.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2014_raw.csv")
+O3.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2015_raw.csv")
+O3.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2016_raw.csv")
+O3.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2017_raw.csv")
 
-```{r cars}
-summary(cars)
+
+# Upload data for PM2.5. 
+PM25.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2013_raw.csv")
+PM25.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2014_raw.csv")
+PM25.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2015_raw.csv")
+PM25.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2016_raw.csv")
+PM25.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2017_raw.csv")
 ```
 
-## Including Plots
+Combine datasets and save file to repository. Then format data column, explore data. 
+```{r}
+# Combine NO2 datasets, save combined file
+NO2.AllYears <- rbind(NO2.2013, NO2.2014, NO2.2015, NO2.2016, NO2.2017)
+write.csv(NO2.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/EPAair_NO2_2013to2017_raw.csv")
 
-You can also embed plots, for example:
+# Combine O3 datasets, save combined file
+O3.AllYears<- rbind(O3.2013, O3.2014, O3.2015, O3.2016, O3.2017)
+write.csv(O3.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/EPAair_O3_2013to2017_raw.csv")
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Combine PM2.5 datasets, save combined file
+PM25.AllYears<- rbind(PM25.2013, PM25.2014, PM25.2015, PM25.2016, PM25.2017)
+write.csv(PM25.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/EPAair_PM25_2013to2017_raw.csv")
+
+# Check structure, get summary, format data column for NO2 data. 
+NO2.AllYears$Date <- as.Date(NO2.AllYears$Date, format = "%m/%d/%Y")
+str(NO2.AllYears)
+summary(NO2.AllYears)
+
+# Format data column for NO2 data; Check structure, dimension, summary
+NO2.AllYears$Date <- as.Date(NO2.AllYears$Date, format = "%m/%d/%Y")
+dim(NO2.AllYears)
+str(NO2.AllYears)
+summary(NO2.AllYears)
+
+# Format data column for O3 data; Check structure, dimension, summary
+O3.AllYears$Date <- as.Date(O3.AllYears$Date, format = "%m/%d/%Y")
+dim(O3.AllYears)
+str(O3.AllYears)
+summary(O3.AllYears)
+
+# Format data column for PM2.5 data; Check structure, dimension, summary
+PM25.AllYears$Date <- as.Date(PM25.AllYears$Date, format = "%m/%d/%Y")
+dim(PM25.AllYears)
+str(PM25.AllYears)
+summary(PM25.AllYears)
+
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Visually explore datasets. 
+```{r}
+# Visually explore NO2 data
+NO2.histogram <- ggplot(NO2.AllYears) +
+  geom_histogram(aes(x = Daily.Max.1.hour.NO2.Concentration ), bins = 30)
+print(NO2.histogram)
+
+NO2.frequency <- ggplot(NO2.AllYears) +
+  geom_freqpoly(aes(x = Daily.Max.1.hour.NO2.Concentration, color = COUNTY), bins = 50)
+print (NO2.frequency)
+
+NO2.boxplot <- ggplot(NO2.AllYears) +
+  geom_boxplot(aes(x = COUNTY, y = Daily.Max.1.hour.NO2.Concentration)) + 
+  theme(axis.text.x = element_text(angle = 45,  hjust = 1))
+print(NO2.boxplot)
+
+# Visually explore O3 data
+O3.histogram <- ggplot(O3.AllYears) +
+  geom_histogram(aes(x = Daily.Max.8.hour.Ozone.Concentration), bins = 20)
+print(O3.histogram)
+
+O3.frequency <- ggplot(O3.AllYears) +
+  geom_freqpoly(aes(x = Daily.Max.8.hour.Ozone.Concentration, color = COUNTY), bins = 50)
+print(O3.frequency)
+
+O3.boxplot <- ggplot(O3.AllYears) +
+  geom_boxplot(aes(x = COUNTY, y = Daily.Max.8.hour.Ozone.Concentration)) + 
+  theme(axis.text.x = element_text(angle = 45,  hjust = 1))
+print(O3.boxplot)
+
+# Visually explore PM2.5 data
+PM25.histogram <- ggplot(PM25.AllYears) +
+  geom_histogram(aes(x = Daily.Mean.PM2.5.Concentration ), bins = 30) +
+  scale_x_continuous(limits = c(-10,100))
+print(PM25.histogram)
+
+PM25.frequency <- ggplot(PM25.AllYears) +
+  geom_freqpoly(aes(x = Daily.Mean.PM2.5.Concentration, color = COUNTY), bins = 50) +
+  scale_x_continuous(limits = c(-10,100))
+print(PM25.frequency)
+
+PM25.boxplot <- ggplot(PM25.AllYears) +
+  geom_boxplot(aes(x = COUNTY, y = Daily.Mean.PM2.5.Concentration)) + 
+  theme(axis.text.x = element_text(angle = 45,  hjust = 1)) + 
+  scale_y_continuous(limits = c(-6,100))
+print(PM25.boxplot)
+
+```
+
+Upload asthma datasets. 
+```{r}
+# Upload asthma datasets for adults
+
+Asthma.Adults.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2013_raw.csv")
+Asthma.Adults.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2014_raw.csv")
+Asthma.Adults.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2015_raw.csv")
+Asthma.Adults.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2016_raw.csv")
+Asthma.Adults.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2017_raw.csv")
+
+# Upload asthma datasets for children
+Asthma.Children.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2013_raw.csv")
+Asthma.Children.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2014_raw.csv")
+Asthma.Children.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2015_raw.csv")
+Asthma.Children.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2016_raw.csv")
+Asthma.Children.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2017_raw.csv")
+```
+
+Combine datasets and save file to repository. Then explore data. 
+```{r}
+
+# Add year column to all datsets
+
+Asthma.Adults.2013$Year <- 2013
+Asthma.Adults.2014$Year <- 2014
+Asthma.Adults.2015$Year <- 2015
+Asthma.Adults.2016$Year <- 2016
+Asthma.Adults.2017$Year <- 2017
+
+Asthma.Children.2013$Year <- 2013
+Asthma.Children.2014$Year <- 2014
+Asthma.Children.2015$Year <- 2015
+Asthma.Children.2016$Year <- 2016
+Asthma.Children.2017$Year <- 2017
+
+
+# Combine adult asthma datasets, save combined file
+Asthma.Adults.AllYears <- rbind(Asthma.Adults.2013, Asthma.Adults.2014, Asthma.Adults.2015, Asthma.Adults.2016,Asthma.Adults.2017)
+write.csv(Asthma.Adults.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/TrackingCA_Asthma_ERVisits_Adults_2013to2017_raw.csv")
+
+# Combine children asthma datasets, save combined file
+Asthma.Children.AllYears <- rbind(Asthma.Children.2013, Asthma.Children.2014, Asthma.Children.2015, Asthma.Children.2016,Asthma.Children.2017)
+write.csv(Asthma.Children.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/TrackingCA_Asthma_ERVisits_Children_2013to2017_raw.csv")
+
+# Explore adult asthma data
+dim(Asthma.Adults.AllYears)
+str(Asthma.Adults.AllYears)
+summary(Asthma.Adults.AllYears)
+
+# Explore children asthma data
+dim(Asthma.Children.AllYears)
+str(Asthma.Children.AllYears)
+summary(Asthma.Children.AllYears)
+
+
+```
+Visually explore datasets. 
+```{r}
+# Visually explore adult asthma dataset
+adult.asthma.histogram <- ggplot(Asthma.Adults.AllYears) +
+  geom_histogram(aes(x = Incidence ), bins = 30) +
+  scale_x_continuous(limits=c(0, 200))
+print(adult.asthma.histogram)
+
+# Visually explore children asthma dataset
+children.asthma.histogram <- ggplot(Asthma.Children.AllYears) +
+  geom_histogram(aes(x = Incidence ), bins = 30) +
+  scale_x_continuous(limits=c(0, 250))
+print(children.asthma.histogram)
+
+```
+
+Upload demographics datset
+```{r}
+Demographics <- read.csv ("../Data/Raw/Demographics/CountyHealthRankings_CA_2019_filtered_raw.csv")
+
+```
+
+Explore demographics dataset
+```{r}
+
+dim(Demographics)
+str(Demographics)
+summary(Demographics)
+
+```
+
+Explore data visually.
+```{r}
+# Median Household Income
+MHI.histogram <- ggplot(Demographics) +
+  geom_histogram(aes(x = Median.Household.Income), bins = 15)
+print(MHI.histogram)
+
+
+MHI.frequency <- ggplot(Demographics) +
+  geom_freqpoly(aes(x = Median.Household.Income), bins = 15)
+print(MHI.frequency)
+
+Black.MHI.scatter <- ggplot(Demographics) +
+  geom_point(aes(x = Percent.African.American, y = Median.Household.Income))
+print(Black.MHI.scatter)
+
+Black.MHI.scatter <- ggplot(Demographics) +
+  geom_point(aes(x = Percent.African.American, y = Median.Household.Income))
+print(Black.MHI.scatter)
+
+
+pairs(Demographics[, 4:10])
+```
+
