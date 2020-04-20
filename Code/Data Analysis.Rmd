@@ -1,30 +1,380 @@
 ---
-title: "Data Analysis"
+title: "Data Analytics Final Project"
 author: "Alicia Zhao"
-date: "3/31/2020"
-output: html_document
+date: "4/19/2020"
+output:
+  pdf_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r include=FALSE}
+# Set up
+getwd()
+library(tidyverse)
+library(trend)
+library(zoo)
+library(cowplot)
+
+#Set theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
+
+# Upload air quality datasets 
+NO2 <- read.csv("../Data/Processed/EPAair_NO2_Processed.csv")
+O3 <- read.csv("../Data/Processed/EPAair_O3_Processed.csv")
+PM25 <- read.csv("../Data/Processed/EPAair_PM25_Processed.csv")
+
+NO2$Date <- as.Date(NO2$Date, format = "%Y-%m-%d")
+O3$Date <- as.Date(O3$Date, format = "%Y-%m-%d")
+PM25$Date <- as.Date(PM25$Date, format = "%Y-%m-%d")
+
+# Create column for pollutant description
+NO2$Pollutant <- "NO2"
+O3$Pollutant <- "O3"
+PM25$Pollutant <- "PM2.5"
+
+# Change column name for concentration so that they are the same. 
+names(NO2)[3] <- "Concentration"
+names(O3)[3] <- "Concentration"
+names(PM25)[3] <- "Concentration"
+
+# Combine datasets
+EPAair <- rbind(NO2, O3, PM25)
+
+# Create subset with target counties and monthly AQI data. 
+EPAair.monthly <- EPAair %>%
+  group_by(Year, Month, Pollutant, COUNTY, Site.Name) %>%
+  na.omit() %>%
+  summarise(daily.meanaqi = mean(DAILY_AQI_VALUE))
+
+EPAair.monthly$Date <- as.Date(paste(EPAair.monthly$Year,
+                                     EPAair.monthly$Month, 
+                                                1, sep="-"), 
+                                          format = "%Y-%m-%d")
+
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r echo=FALSE, fig.cap="Air quality across four cities in California, 2013-2017", fig.height=8, fig.width=10}
+# Time series visualization
+# Create datasets for each city: San Francisco, Bakersfield-California, Oakland, Los Angeles-North Main Street
+EPAair.Cities <- EPAair.monthly %>%
+  filter(Site.Name == "San Francisco" |
+         Site.Name == "Bakersfield-California"|
+         Site.Name =="Los Angeles-North Main Street"|
+         Site.Name == "Fresno - Garland")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+ggplot(EPAair.Cities) +
+  geom_line(aes(x = Date, y = daily.meanaqi, color= Pollutant)) +
+  geom_hline(yintercept = 100, lty = 2) +
+  geom_hline(yintercept = 50, lty = 2) + 
+  geom_text(x = as.Date("2017-05-01"), y = 45, label = "good", hjust = 0, fontface = "bold") +
+  geom_text(x = as.Date("2017-11-01"), y = 95, label = "moderate", hjust = 1, fontface = "bold") +
+  geom_text(x = as.Date("2017-11-01"), y = 120, label = "unhealthy (sensitive groups)", hjust = 1, fontface = "bold") +
+  labs( x="", y = "AQI value") + 
+  scale_x_date(date_breaks = "1 year", date_label = "%Y") + 
+  theme(axis.text.x=element_text(angle=60, hjust=1)) + 
+  facet_wrap(vars(Site.Name))
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+```{r eval=FALSE, include=FALSE}
+#Time series analysis 
+# Spread data so that pollutants have their own columns
 
-You can also embed plots, for example:
+## Bakersfield 
+EPAair.Bakersfield.spread <- EPAair.monthly %>%
+  filter(Site.Name == "Bakersfield-California") %>%
+  spread(Pollutant, daily.meanaqi) 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Approximating missing data
+EPAair.Bakersfield.spread$NO2 <- na.approx(EPAair.Bakersfield.spread$NO2)
+EPAair.Bakersfield.spread$O3 <- na.approx(EPAair.Bakersfield.spread$O3)
+
+EPAair.Bakersfield.NO2.ts <- ts(EPAair.Bakersfield.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Bakersfield.NO2.trend <- smk.test(EPAair.Bakersfield.NO2.ts)
+Bakersfield.NO2.trend
+summary(Bakersfield.NO2.trend)
+# Significant overall decreasing trend for NO2
+
+EPAair.Bakersfield.O3.ts <- ts(EPAair.Bakersfield.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Bakersfield.O3.trend <- smk.test(EPAair.Bakersfield.O3.ts)
+Bakersfield.O3.trend
+summary(Bakersfield.O3.trend)
+# No significant trend for O3
+
+EPAair.Bakersfield.PM25.ts <- ts(EPAair.Bakersfield.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Bakersfield.PM25.trend <- smk.test(EPAair.Bakersfield.PM25.ts)
+Bakersfield.PM25.trend
+summary(Bakersfield.PM25.trend)
+# Significant overall decreasing trend for PM2.5
+
+
+## Fresno
+EPAair.Fresno.spread <- EPAair.monthly %>%
+  filter(Site.Name == "Fresno - Garland") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.Fresno.NO2.ts <- ts(EPAair.Fresno.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Fresno.NO2.trend <- smk.test(EPAair.Fresno.NO2.ts)
+Fresno.NO2.trend
+summary(Fresno.NO2.trend)
+# No significant trend for NO2
+
+EPAair.Fresno.O3.ts <- ts(EPAair.Fresno.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Fresno.O3.trend <- smk.test(EPAair.Fresno.O3.ts)
+Fresno.O3.trend
+summary(Fresno.O3.trend)
+# No significant trend for O3
+
+EPAair.Fresno.PM25.ts <- ts(EPAair.Fresno.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Fresno.PM25.trend <- smk.test(EPAair.Fresno.PM25.ts)
+Fresno.PM25.trend
+summary(Fresno.PM25.trend)
+# No significant trend for PM2.5
+
+## Los Angeles
+EPAair.LA.spread <- EPAair.monthly %>%
+  filter(Site.Name == "Los Angeles-North Main Street") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.LA.NO2.ts <- ts(EPAair.LA.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+LA.NO2.trend <- smk.test(EPAair.LA.NO2.ts)
+LA.NO2.trend
+summary(LA.NO2.trend)
+# No significant trend for NO2
+
+EPAair.LA.O3.ts <- ts(EPAair.LA.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+LA.O3.trend <- smk.test(EPAair.LA.O3.ts)
+LA.O3.trend
+summary(LA.O3.trend)
+# Significant overall increasing trend for O3
+
+EPAair.LA.PM25.ts <- ts(EPAair.LA.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+LA.PM25.trend <- smk.test(EPAair.LA.PM25.ts)
+LA.PM25.trend
+summary(LA.PM25.trend)
+# Significant overall decreasing trend for PM2.5 and significant decreasing trned for April. 
+
+
+## San Francisco
+EPAair.SF.spread <- EPAair.monthly %>%
+  filter(Site.Name == "San Francisco") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.SF.NO2.ts <- ts(EPAair.SF.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+SF.NO2.trend <- smk.test(EPAair.SF.NO2.ts)
+SF.NO2.trend
+summary(SF.NO2.trend)
+# Significatn overall decreasing trend for NO2
+
+EPAair.SF.O3.ts <- ts(EPAair.SF.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+SF.O3.trend <- smk.test(EPAair.SF.O3.ts)
+SF.O3.trend
+summary(SF.O3.trend)
+# No significant trend for O3
+
+EPAair.SF.PM25.ts <- ts(EPAair.SF.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+SF.PM25.trend <- smk.test(EPAair.SF.PM25.ts)
+SF.PM25.trend
+summary(SF.PM25.trend)
+# No significant trend for PM2.5
+
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r eval=FALSE, include=FALSE}
+# Counties
+## Imperial County 
+EPAair.Imperial.spread <- EPAair.monthly %>%
+  filter(COUNTY == "Imperial") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.Imperial.NO2.ts <- ts(EPAair.Imperial.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Imperial.NO2.trend <- smk.test(EPAair.Imperial.NO2.ts)
+Imperial.NO2.trend
+summary(Imperial.NO2.trend)
+# no significant trend for NO2
+
+EPAair.Imperial.O3.ts <- ts(EPAair.Imperial.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Imperial.O3.trend <- smk.test(EPAair.Imperial.O3.ts)
+Imperial.O3.trend
+summary(Imperial.O3.trend)
+# Significant decreasing trend for O3 overall but not by month
+
+EPAair.Imperial.PM25.ts <- ts(EPAair.Imperial.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Imperial.PM25.trend <- smk.test(EPAair.Imperial.PM25.ts)
+Imperial.PM25.trend
+summary(Imperial.PM25.trend)
+# No significant trend for 2.5 
+
+## San Bernardino County
+EPAair.SanBernardino.spread <- EPAair.monthly %>%
+  filter(COUNTY == "San Bernardino") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.SanBernardino.NO2.ts <- ts(EPAair.SanBernardino.spread$NO2, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                  end = c(2017, 12, 31))
+SanBernardino.NO2.trend <- smk.test(EPAair.SanBernardino.NO2.ts)
+SanBernardino.NO2.trend
+summary(SanBernardino.NO2.trend)
+# no significant trend for NO2
+
+EPAair.SanBernardino.O3.ts <- ts(EPAair.SanBernardino.spread$O3, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                 end = c(2017, 12, 31))
+SanBernardino.O3.trend <- smk.test(EPAair.SanBernardino.O3.ts)
+SanBernardino.O3.trend
+summary(SanBernardino.O3.trend)
+# no significant trend for O3
+
+EPAair.SanBernardino.PM25.ts <- ts(EPAair.SanBernardino.spread$PM2.5, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                 end = c(2017, 12, 31))
+SanBernardino.PM25.trend <- smk.test(EPAair.SanBernardino.PM25.ts)
+SanBernardino.PM25.trend
+summary(SanBernardino.PM25.trend)
+# No significant trend for PM2.5
+
+## San Bernardino County
+EPAair.SanBernardino.spread <- EPAair.monthly %>%
+  filter(COUNTY == "San Bernardino") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.SanBernardino.NO2.ts <- ts(EPAair.SanBernardino.spread$NO2, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                  end = c(2017, 12, 31))
+SanBernardino.NO2.trend <- smk.test(EPAair.SanBernardino.NO2.ts)
+SanBernardino.NO2.trend
+summary(SanBernardino.NO2.trend)
+# no significant trend for NO2
+
+EPAair.SanBernardino.O3.ts <- ts(EPAair.SanBernardino.spread$O3, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                 end = c(2017, 12, 31))
+SanBernardino.O3.trend <- smk.test(EPAair.SanBernardino.O3.ts)
+SanBernardino.O3.trend
+summary(SanBernardino.O3.trend)
+# no significant trend for O3
+
+EPAair.SanBernardino.PM25.ts <- ts(EPAair.SanBernardino.spread$PM2.5, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                 end = c(2017, 12, 31))
+SanBernardino.PM25.trend <- smk.test(EPAair.SanBernardino.PM25.ts)
+SanBernardino.PM25.trend
+summary(SanBernardino.PM25.trend)
+# No significant trend for PM2.5
+
+
+## Santa Clara County
+EPAair.SantaClara.spread <- EPAair.monthly %>%
+  filter(COUNTY == "Santa Clara") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.SantaClara.NO2.ts <- ts(EPAair.SantaClara.spread$NO2, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                  end = c(2017, 12, 31))
+SanBernardino.NO2.trend <- smk.test(EPAair.SanBernardino.NO2.ts)
+SanBernardino.NO2.trend
+summary(SanBernardino.NO2.trend)
+# no significant trend for NO2
+
+EPAair.SanBernardino.O3.ts <- ts(EPAair.SanBernardino.spread$O3, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                 end = c(2017, 12, 31))
+SanBernardino.O3.trend <- smk.test(EPAair.SanBernardino.O3.ts)
+SanBernardino.O3.trend
+summary(SanBernardino.O3.trend)
+# no significant trend for O3
+
+EPAair.SanBernardino.PM25.ts <- ts(EPAair.SanBernardino.spread$PM2.5, 
+                                  frequency = 12, 
+                                  start = c(2013, 1, 1), 
+                                 end = c(2017, 12, 31))
+SanBernardino.PM25.trend <- smk.test(EPAair.SanBernardino.PM25.ts)
+SanBernardino.PM25.trend
+summary(SanBernardino.PM25.trend)
+# No significant trend for PM2.5
+
+```
+
+
+```{r eval=FALSE, include=FALSE}
+# Code for ANOVA (Whether air quality differs by county)
+# shapiro-wilk test
+shapiro.test()
+
+# equal variance
+bartlett.test()
+
+# anova (air quality by county)
+aov(data = Litter.Totals, dryMass ~ plotID)
+summary(Litter.Totals.anova)
+
+# Post-hoc test
+TukeyHSD(Litter.Totals.anova)
+
+# Extract groupings for pairwise relationships
+Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
+Litter.Totals.groups
+
+# Graph the results
+Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5,
+               label = c("abc", "ab", "abcd", "bcd", "bcd", "a", 
+                         "d", "abcd", "cd", "d", "abcd", "abcd")) +
+  labs(x = "Plot ID", y = "Dry Mass (g)") +
+  ylim(0, 85)
+print(Litter.Totals.plot)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#Linear regression 
+
+irradiance.regression <- lm(data = PeterPaul.chem.nutrients, irradianceWater ~ depth)
+summary(irradiance.regression)
+
+# Correlation
+cor.test(PeterPaul.chem.nutrients$irradianceWater, PeterPaul.chem.nutrients$depth)
+```
+

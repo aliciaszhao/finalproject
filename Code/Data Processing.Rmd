@@ -116,6 +116,7 @@ write.csv(Asthma.Complete, row.names = FALSE,
 Demographics <- read.csv ("../Data/Raw/Demographics/CountyHealthRankings_CA_2019_filtered_raw.csv")
 
 str(Demographics)
+summary(Demographics)
 
 ```
 
