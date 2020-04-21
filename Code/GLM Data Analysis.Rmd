@@ -1,0 +1,160 @@
+---
+title: "GLM Data Analysis"
+author: "Alicia Zhao"
+date: "4/20/2020"
+output: html_document
+---
+
+```{r}
+# Set up
+getwd()
+library(tidyverse)
+library(trend)
+library(zoo)
+library(cowplot)
+
+#Set theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
+
+# Upload air quality dataset
+EPAair <- read.csv("../Data/Processed/EPAair_NO2_O3_PM25_2013to2017_Processed.csv")
+
+# Convert data to yearly data
+EPAair.yearly <- EPAair %>%
+  group_by(Year, Pollutant, COUNTY) %>%
+  summarise(daily.meanaqi = mean(DAILY_AQI_VALUE))
+
+colnames(EPAair.yearly)[3] = "County"
+
+# Spread data so that pollutants have their own columns
+EPAair.yearly.spread <- EPAair.yearly %>%
+  spread(Pollutant, daily.meanaqi) 
+
+# Upload asthma dataset
+CA.Asthma <- read.csv("../Data/Processed/TrackingCA_Asthma_AdultsChildren_Processed.csv")
+
+# Combine air quality, asthma datasets 
+CA.air.asthma <- left_join(EPAair.yearly.spread, CA.Asthma)
+
+# Upload demographics dataset
+Demographics <- read.csv("../Data/Raw/Demographics/CountyHealthRankings_CA_2019_filtered_raw.csv")
+
+CA.air.asthma.demo <- left_join(CA.air.asthma, Demographics)
+
+## Due to lack of data in NO2, will just be examining O3 and PM2.5. 
+CA.air.asthma.demo <- CA.air.asthma.demo %>%
+  select (-NO2)
+
+```
+
+```{r}
+# Preliminary visualization
+
+library(scales)
+CA.air.asthma
+
+O3.adults.plot <-
+ggplot(CA.air.asthma.demo, aes(x = O3, y = Mean.Incidence.Adults)) +
+  geom_point(aes(color = Percent.Smokers)) +
+  geom_smooth(method = "lm") + 
+  scale_color_viridis_c(labels = comma) + 
+  labs(x="AQI Value for O3", y = "Asthma-Related ER Visits Per 10,000 People", 
+       color ="Percent Smokers") + 
+  xlim(20, 60)
+print(O3.adults.plot)
+
+O3.children.plot <-
+ggplot(CA.air.asthma.demo, aes(x = O3, y = Mean.Incidence.Children)) +
+  geom_point(aes(color = Percent.Smokers)) +
+  geom_smooth(method = "lm") +
+  scale_color_viridis_c(labels = comma) + 
+  labs(x="AQI Value for O3", y = "Asthma-Related ER Visits Per 10,000 People", 
+       color ="Percent Smokers") + 
+  xlim(20, 60)
+print(O3.children.plot)
+
+
+PM25.adults.plot <-
+ggplot(CA.air.asthma.demo, aes(x = PM2.5, y = Mean.Incidence.Adults)) +
+  geom_point(aes(color = Median.Household.Income)) +
+  geom_smooth(method = "lm") + 
+  scale_color_viridis_c(labels = comma) + 
+  labs(x="AQI Value for PM2.5", y = "Asthma-Related ER Visits Per 10,000 People", 
+       color ="Median Household Income") + 
+  xlim(20, 60)
+print(PM25.adults.plot)
+
+PM25.children.plot <-
+ggplot(CA.air.asthma.demo, aes(x = PM2.5, y = Mean.Incidence.Children)) +
+  geom_point(aes(color = Median.Household.Income)) +
+  geom_smooth(method = "lm") +
+  scale_color_viridis_c(labels = comma) + 
+  labs(x="AQI Value for PM2.5", y = "Visits Per 10,000 People", 
+       color ="Median Household Income", caption = "Asthma-related ER visits for children versus average daily Air Quality Index(AQI) values for PM2.5 across 54 California counties, 2013 - 2017 ") + 
+  theme (plot.caption = element_text(size = 12, face = "italic")) +
+  xlim(10, 60) + 
+  ylim(0, 200)
+  
+print(PM25.children.plot)
+
+```
+
+```{r}
+library(nlme)
+
+CA.air.asthma.demo.naomit <- na.omit(CA.air.asthma.demo)
+
+# Regression for children
+Children.regression1 <- lm(data = CA.air.asthma.demo.naomit,
+                     Mean.Incidence.Children ~ O3 + PM2.5 + Median.Household.Income
+                     + Percent.African.American + Percent.Rural)
+summary(Children.regression1)
+
+Children.regression2 <- lm(data = CA.air.asthma.demo.naomit,
+                     Mean.Incidence.Children ~ PM2.5 + Median.Household.Income
+                     + Percent.African.American)
+summary(Children.regression2)
+
+
+# Regression for adults
+Adults.regression1 <- lm(data = CA.air.asthma.demo.naomit,
+                     Mean.Incidence.Adults ~ O3 + PM2.5 + Median.Household.Income
+                     + Percent.African.American + Percent.Rural)
+summary(Adults.regression1)
+
+Adults.regression2 <- lm(data = CA.air.asthma.demo.naomit,
+                     Mean.Incidence.Adults ~  O3 + Median.Household.Income
+                     + Percent.Rural + Percent.African.American)
+summary(Adults.regression2)
+
+
+
+## Tests
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(Children.PM25.regression)
+par(mfrow = c(1,1))
+
+
+library(lmtest)
+library(car)
+# Breush-Pagan test for homoskedasticity
+lmtest::bptest(Adults.O3.PM25.regression)
+lmtest::bptest(Children.O3.PM25.regression)
+
+## VIF test for multicollinearity
+car::vif (Adults.regression2)
+car::vif (Children.regression2)
+
+# AIC
+step(Children.regression1)
+# Original is most parsimonious for children
+
+step(Adults.regression1)
+# Original is most parsimonious for adults
+
+
+```
+
