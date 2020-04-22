@@ -359,6 +359,19 @@ SITE\_LONGITUDE\strut
 \bottomrule
 \end{longtable}
 
+\hypertarget{data-wrangling}{%
+\subsubsection{Data wrangling}\label{data-wrangling}}
+
+Air quality datasets for different years were combined using
+\texttt{rbind} to form one dataset for each pollutant.
+
+The following columns were selected: * Date * Site.ID *
+Daily.Max.1.hour.NO2.Concentration * DAILY\_AQI\_VALUE * Site.Name *
+COUNTY
+
+Additionally, columns for \texttt{Month} and \texttt{Year} were added
+using the \texttt{Date} column.
+
 \hypertarget{asthma-datasets}{%
 \subsection{Asthma datasets}\label{asthma-datasets}}
 
@@ -429,6 +442,24 @@ Age-adjusted rate of emergency department (ER) visits due to asthma per
 \bottomrule
 \end{longtable}
 
+\hypertarget{data-wrangling-1}{%
+\subsubsection{Data wrangling}\label{data-wrangling-1}}
+
+A `Year' column was added to all asthma datasets. Datasets for 2013-2017
+were combined using \texttt{rbind} to form one dataset for each age
+group (Adults, Children).
+
+Since the asthma datasets provide only zip code information but not
+county information, an online search was done to find zip codes and
+their corresponding counties in California. This information was
+datascraped into a data frame. This dataframe was then combined with the
+adult dataset and the children dataset using \texttt{left\_join}. The
+incidence rates were then grouped by county to calculate an average
+incidence rate for each county.
+
+Finally, adult and children asthma datasets were combined using
+\texttt{full\_join}.
+
 \hypertarget{demographics-dataset}{%
 \subsection{Demographics dataset}\label{demographics-dataset}}
 
@@ -450,22 +481,6 @@ The following information is contained in the dataset: * FIPS * State *
 County * Median Household Income * Population * \% African American * \%
 Rural * \% Smokers * \% Uninsured
 
-\hypertarget{data-wrangling}{%
-\subsection{Data wrangling}\label{data-wrangling}}
-
-\hypertarget{quality-assurancequality-control}{%
-\subsection{Quality assurance/quality
-control}\label{quality-assurancequality-control}}
-
-Data types for each column will be checked to ensure that they are read
-as the correct type. Additionally, values for each column will be
-checked so that they are consistent with the data type.
-
-For data that seem questionable, I will identify them by including a
-flagging\_column next to the column of data values. If these data are
-used in the model, I will include the percent flagged data and percent
-missing data.
-
 \newpage
 
 \hypertarget{exploratory-analysis}{%
@@ -484,6 +499,39 @@ be referenced within the text.
 Scope: think about what information someone might want to know about the
 dataset before analyzing it statistically. How might you visualize this
 information?
+
+\hypertarget{air-quality-datasets}{%
+\subsection{Air quality datasets}\label{air-quality-datasets}}
+
+In examining the air quality index (AQI) values for the three pollutants
+across all sites, there is not much temporal variation (Figure 1).
+However, the frequency distrbution does differ depending on the
+pollutant. NO2 generally has lower AQI values, which are aggregate well
+below 50, the cut-off number for the ``Good'' air quality range. O3 and
+PM2.5 have higher AQI values, which concentrated closer to 50, and also
+contain more values that are above 50.
+
+Among the four target sites--Bakersfield, Fresno, Los Angeles and San
+Francisco--Bakersfield appears to have higher AQI values than the other
+sites across all pollutants. In contrast, San Francisco generally has
+lower AQI values compared to the other sites. Although AQI values for
+NO2 stay below the ``Unhealthy'' range for all sites, the AQI values for
+O3 and PM2.5 are generally in this range.
+
+\begin{figure}
+\centering
+\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-1-1.pdf}
+\caption{Frequency plots of daily air quality index (AQI) values for the
+three pollutants across the years 2013-2017.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-2-1.pdf}
+\caption{Boxplots of daily air quality index (AQI) values for the three
+pollutants in four key sites. The dashed line represents the lower bound
+for the \texttt{Unhealthy\ (For\ sensitive\ groups)} range.}
+\end{figure}
 
 \newpage
 

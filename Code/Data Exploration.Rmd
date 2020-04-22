@@ -66,7 +66,6 @@ names(NO2.Subset)[3] <- "Concentration"
 write.csv(NO2.Subset, row.names = FALSE, 
           file ="../Data/Processed/EPAair_NO2_Processed.csv")
 
-
 # Format data column for O3 data; Check structure, dimension, summary
 O3.AllYears$Date <- as.Date(O3.AllYears$Date, format = "%m/%d/%Y")
 dim(O3.AllYears)
@@ -105,16 +104,14 @@ EPAair <- rbind(NO2.Subset, O3.Subset, PM25.Subset)
 
 ```
 
-Visually explore datasets. 
-```{r}
 
+```{r}
 # Visually explore NO2 data
 NO2.frequency <- ggplot(subset(EPAair, Pollutant == "NO2")) +
   geom_freqpoly(aes(x = DAILY_AQI_VALUE, color = as.factor(Year)), bins = 50)
 print (NO2.frequency)
 
 # Visually explore O3 data
-
 O3.frequency <- ggplot(subset(EPAair, Pollutant == "O3")) +
   geom_freqpoly(aes(x = DAILY_AQI_VALUE, color = as.factor (Year)), bins = 50)
 print(O3.frequency)
@@ -125,23 +122,6 @@ PM25.frequency <- ggplot(subset(EPAair, Pollutant == "PM2.5")) +
 print(PM25.frequency)
 
 # Visualize data together
-NO2 <- read.csv("../Data/Processed/EPAair_NO2_Processed.csv")
-O3 <- read.csv("../Data/Processed/EPAair_O3_Processed.csv")
-PM25 <- read.csv("../Data/Processed/EPAair_PM25_Processed.csv")
-
-NO2$Date <- as.Date(NO2$Date, format = "%Y-%m-%d")
-O3$Date <- as.Date(O3$Date, format = "%Y-%m-%d")
-PM25$Date <- as.Date(PM25$Date, format = "%Y-%m-%d")
-
-NO2$Pollutant <- "NO2"
-O3$Pollutant <- "O3"
-PM25$Pollutant <- "PM2.5"
-
-names(NO2)[3] <- "Concentration"
-names(O3)[3] <- "Concentration"
-names(PM25)[3] <- "Concentration"
-EPAair <- rbind(NO2, O3, PM25)
-
 Airpollution.frequency <- ggplot(EPAair) +
   geom_freqpoly(aes(x = DAILY_AQI_VALUE, color = Pollutant), bins = 50) +
   labs (y = "Daily AQI Value") + 

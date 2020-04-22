@@ -203,21 +203,161 @@ The following information is contained in the dataset:
 * % Uninsured
 
 
-
-
-
-
 \newpage
 
 # Exploratory Analysis 
+
+
+
 Insert exploratory visualizations of your dataset. This may include, but is not limited to, graphs illustrating the distributions of variables of interest and/or maps of the spatial context of your dataset. Format your R chunks so that graphs are displayed but code is not displayed. Accompany these graphs with text sections that describe the visualizations and provide context for further analyses.
 
 Each figure should be accompanied by a caption, and each figure should be referenced within the text. 
 
 Scope: think about what information someone might want to know about the dataset before analyzing it statistically. How might you visualize this information? 
 
-
 ## Air quality datasets
+
+In examining the air quality index (AQI) values for the three pollutants across all sites, there is not much temporal variation (Figure 1). However, the frequency distrbution does differ depending on the pollutant. NO2 generally has lower AQI values, which are aggregate well below 50, the cut-off number for the "Good" air quality range. O3 and PM2.5 have higher AQI values, which concentrated closer to 50, and also contain more values that are above 50. 
+
+Among the four target sites--Bakersfield, Fresno, Los Angeles and San Francisco--Bakersfield appears to have higher AQI values than the other sites across all pollutants (Figure 2). In contrast, San Francisco generally has lower AQI values compared to the other sites. Although AQI values for NO2 stay below the "Unhealthy" range for all sites, the AQI values for O3 and PM2.5 are generally in this range. 
+
+```{r set up, include=FALSE}
+# Load packages
+getwd()
+library(tidyverse)
+library(lubridate)
+library(rvest)
+library(scales)
+library(cowplot)
+
+# Upload data for NO2. 
+NO2.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2013_raw.csv")
+NO2.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2014_raw.csv")
+NO2.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2015_raw.csv")
+NO2.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2016_raw.csv")
+NO2.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2017_raw.csv")
+
+
+# Upload data for O3. 
+O3.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2013_raw.csv")
+O3.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2014_raw.csv")
+O3.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2015_raw.csv")
+O3.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2016_raw.csv")
+O3.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_O3_CA_2017_raw.csv")
+
+
+# Upload data for PM2.5. 
+PM25.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2013_raw.csv")
+PM25.2014 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2014_raw.csv")
+PM25.2015 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2015_raw.csv")
+PM25.2016 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2016_raw.csv")
+PM25.2017 <- read.csv ("../Data/Raw/Air Quality/EPAair_PM25_CA_2017_raw.csv")
+
+# Set theme
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
+
+```
+
+```{r Data wrangling, warning=FALSE, include=FALSE}
+# Combine pollution datasets by pollutant
+NO2.AllYears <- rbind(NO2.2013, NO2.2014, NO2.2015, NO2.2016, NO2.2017)
+O3.AllYears<- rbind(O3.2013, O3.2014, O3.2015, O3.2016, O3.2017)
+PM25.AllYears<- rbind(PM25.2013, PM25.2014, PM25.2015, PM25.2016, PM25.2017)
+
+# Format date column; Check structure, dimension, summary
+NO2.AllYears$Date <- as.Date(NO2.AllYears$Date, format = "%m/%d/%Y")
+dim(NO2.AllYears)
+str(NO2.AllYears)
+summary(NO2.AllYears)
+
+O3.AllYears$Date <- as.Date(O3.AllYears$Date, format = "%m/%d/%Y")
+dim(O3.AllYears)
+str(O3.AllYears)
+summary(O3.AllYears)
+
+PM25.AllYears$Date <- as.Date(PM25.AllYears$Date, format = "%m/%d/%Y")
+dim(PM25.AllYears)
+str(PM25.AllYears)
+summary(PM25.AllYears)
+
+# Create column for 'Pollutant'
+NO2.AllYears$Pollutant <- "NO2"
+O3.AllYears$Pollutant <- "O3"
+PM25.AllYears$Pollutant <- "PM2.5"
+
+# Subset  data and create column for Year and Month; Change name of Daily.Max.1.hour.NO2.Concentration to Concentration for consistency; save file in Processed folder. 
+NO2.Subset <- NO2.AllYears %>%
+    select (Date, Site.ID, Daily.Max.1.hour.NO2.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY,
+         COUNTY_CODE, Pollutant) %>%
+  mutate (Month = month(Date)) %>%
+  mutate (Year = year(Date))
+names(NO2.Subset)[3] <- "Concentration"
+write.csv(NO2.Subset, row.names = FALSE, 
+          file ="../Data/Processed/EPAair_NO2_Processed.csv")
+
+O3.Subset <- O3.AllYears %>%
+    select (Date, Site.ID, Daily.Max.8.hour.Ozone.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY,
+         COUNTY_CODE, Pollutant) %>%
+  mutate (Month = month(Date)) %>%
+  mutate (Year = year(Date))
+names(O3.Subset)[3] <- "Concentration"
+write.csv(NO2.Subset, row.names = FALSE, 
+          file ="../Data/Processed/EPAair_O3_Processed.csv")
+
+PM25.Subset <- PM25.AllYears %>%
+  select(Date, Site.ID, Daily.Mean.PM2.5.Concentration, DAILY_AQI_VALUE, Site.Name, COUNTY,
+         COUNTY_CODE, Pollutant) %>%
+  mutate (Month = month(Date)) %>%
+  mutate (Year = year(Date))
+names(PM25.Subset)[3] <- "Concentration"
+
+write.csv(PM25.Subset, row.names = FALSE, 
+          file ="../Data/Processed/EPAair_PM25_Processed.csv")
+
+# Combine subsetted datasets into one dataset for all pollutants
+EPAair <- rbind(NO2.Subset, O3.Subset, PM25.Subset)
+```
+
+```{r echo=FALSE, fig.cap= "Frequency plots of daily air quality index (AQI) values for the three pollutants across the years 2013-2017.", warning=FALSE}
+# Visually explore NO2 data
+NO2.frequency <- ggplot(subset(EPAair, Pollutant == "NO2")) +
+  geom_freqpoly(aes(x = DAILY_AQI_VALUE, color = as.factor(Year)), bins = 50) +
+ labs(x = expression("Daily AQI Value for NO"[2]), color = "Year") + 
+  scale_x_continuous(breaks=seq(from = 0, to = 200, by = 50), limits=c(0,200))
+
+# Visually explore O3 data
+O3.frequency <- ggplot(subset(EPAair, Pollutant == "O3")) +
+  geom_freqpoly(aes(x = DAILY_AQI_VALUE, color = as.factor (Year)), bins = 50) +
+  labs(x = expression("Daily AQI Value for O"[3]), color = "Year") +
+  scale_x_continuous(breaks=seq(from = 0, to = 200, by = 50), limits=c(0,200))
+
+# Visually explore PM2.5 data
+PM25.frequency <- ggplot(subset(EPAair, Pollutant == "PM2.5")) +
+  geom_freqpoly(aes(x = DAILY_AQI_VALUE, color = as.factor (Year)), bins = 50) +
+  labs(x = "Daily AQI Value for PM2.5", color = "Year") +
+  scale_x_continuous(breaks=seq(from = 0, to = 200, by = 50), limits=c(0,200))
+
+# Combine plots 
+plot_grid(NO2.frequency, O3.frequency, PM25.frequency,nrow = 3, align = 'h', axis = "b" )
+
+```
+
+```{r echo=FALSE, fig.cap="Boxplots of daily air quality index (AQI) values for the three pollutants in four key sites. The dashed line represents the lower bound for the `Unhealthy (For sensitive groups)` range.", warning=FALSE}
+# Visualize data by target site
+
+Airpollution.boxplot <- ggplot(subset(EPAair, Site.Name %in% c("San Francisco","Bakersfield-California",
+                                                  "Los Angeles-North Main Street", "Fresno - Garland")))  +
+  geom_boxplot(aes(x = Pollutant, y = DAILY_AQI_VALUE, fill=Site.Name)) +
+  labs (x = "", y = "Daily AQI Value", fill = "Site") + 
+  geom_hline(yintercept = 100, lty = 2) +
+  theme(axis.text.x = element_text(angle = 45,  hjust = 1))
+print(Airpollution.boxplot)
+
+```
+
 
 
 \newpage
