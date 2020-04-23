@@ -206,15 +206,6 @@ The following information is contained in the dataset:
 \newpage
 
 # Exploratory Analysis 
-
-
-
-Insert exploratory visualizations of your dataset. This may include, but is not limited to, graphs illustrating the distributions of variables of interest and/or maps of the spatial context of your dataset. Format your R chunks so that graphs are displayed but code is not displayed. Accompany these graphs with text sections that describe the visualizations and provide context for further analyses.
-
-Each figure should be accompanied by a caption, and each figure should be referenced within the text. 
-
-Scope: think about what information someone might want to know about the dataset before analyzing it statistically. How might you visualize this information? 
-
 ## Air quality datasets
 
 In examining the air quality index (AQI) values for the three pollutants across all sites, there is not much temporal variation (Figure 1). However, the frequency distrbution does differ depending on the pollutant. NO2 generally has lower AQI values, which are aggregate well below 50, the cut-off number for the "Good" air quality range. O3 and PM2.5 have higher AQI values, which concentrated closer to 50, and also contain more values that are above 50. 
@@ -229,6 +220,8 @@ library(lubridate)
 library(rvest)
 library(scales)
 library(cowplot)
+library(trend)
+library(zoo)
 
 # Upload data for NO2. 
 NO2.2013 <- read.csv ("../Data/Raw/Air Quality/EPAair_NO2_CA_2013_raw.csv")
@@ -359,6 +352,136 @@ print(Airpollution.boxplot)
 ```
 
 
+## Asthma datasets
+
+In examining the asthma-related ER visits for adults and children across XX counties in California, children appear to have more asthma-related ER visits than adults. This is an interesting observation that will be accounted for in the GLM analysis that follows. Distributions for both age groups show a right skew. 
+
+```{r warning=FALSE, include=FALSE}
+# Upload asthma datasets for adults
+Asthma.Adults.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2013_raw.csv")
+Asthma.Adults.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2014_raw.csv")
+Asthma.Adults.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2015_raw.csv")
+Asthma.Adults.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2016_raw.csv")
+Asthma.Adults.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Adults_2017_raw.csv")
+
+# Upload asthma datasets for children
+Asthma.Children.2013 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2013_raw.csv")
+Asthma.Children.2014 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2014_raw.csv")
+Asthma.Children.2015 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2015_raw.csv")
+Asthma.Children.2016 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2016_raw.csv")
+Asthma.Children.2017 <- read.csv ("../Data/Raw/Asthma/TrackingCA_Asthma_ERVisits_Children_2017_raw.csv")
+
+# Add year column to all datsets
+Asthma.Adults.2013$Year <- 2013
+Asthma.Adults.2014$Year <- 2014
+Asthma.Adults.2015$Year <- 2015
+Asthma.Adults.2016$Year <- 2016
+Asthma.Adults.2017$Year <- 2017
+
+Asthma.Children.2013$Year <- 2013
+Asthma.Children.2014$Year <- 2014
+Asthma.Children.2015$Year <- 2015
+Asthma.Children.2016$Year <- 2016
+Asthma.Children.2017$Year <- 2017
+
+# Combine adult asthma datasets, save combined file
+Asthma.Adults.AllYears <- rbind(Asthma.Adults.2013, Asthma.Adults.2014, Asthma.Adults.2015, Asthma.Adults.2016,Asthma.Adults.2017)
+write.csv(Asthma.Adults.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/TrackingCA_Asthma_ERVisits_Adults_2013to2017_raw.csv")
+
+# Combine children asthma datasets, save combined file
+Asthma.Children.AllYears <- rbind(Asthma.Children.2013, Asthma.Children.2014, Asthma.Children.2015, Asthma.Children.2016,Asthma.Children.2017)
+write.csv(Asthma.Children.AllYears, row.names = FALSE, 
+          file ="../Data/Raw/TrackingCA_Asthma_ERVisits_Children_2013to2017_raw.csv")
+
+# Data scrape to get zipcodes and corresponding counties.
+url <- "https://www.centralstationmarketing.com/internet-marketing/tools/zip-code-manager.html?state=CA&county=all&city="
+webpage <- read_html(url)
+
+Zip.Code <- webpage %>%
+  html_nodes("tr+ tr td:nth-child(1)") %>% 
+  html_text()
+County <- webpage %>%
+  html_nodes("tr+ tr td:nth-child(3)") %>% 
+  html_text()
+
+ZipCode.County <- data.frame(Zip.Code, County) 
+
+# Convert zipcode to COUNTY 
+str(Asthma.Adults.AllYears$Zip.Code)
+Asthma.Adults.AllYears$Zip.Code <- as.character(Asthma.Adults.AllYears$Zip.Code)
+
+Asthma.Adults.County <- Asthma.Adults.AllYears %>%
+  left_join(ZipCode.County) %>%
+  group_by(Year, County) %>%
+  summarize (Mean.Incidence.Adults = mean(Incidence))
+write.csv(Asthma.Adults.County, row.names = FALSE, 
+          file ="../Data/Processed/TrackingCA_Asthma_Adults_Processed.csv")
+
+# Combine Children asthma datasets. Convert zipcode to COUNTY 
+str(Asthma.Children.AllYears$Zip.Code)
+Asthma.Children.AllYears$Zip.Code <- as.character(Asthma.Children.AllYears$Zip.Code)
+
+Asthma.Children.County <- Asthma.Children.AllYears %>%
+  left_join(ZipCode.County) %>%
+  group_by(Year, County) %>%
+  summarize (Mean.Incidence.Children = mean(Incidence))
+
+write.csv(Asthma.Children.County, row.names = FALSE, 
+          file ="../Data/Processed/TrackingCA_Asthma_Children_Processed.csv")
+
+# Combine children and adult asthma into one dataset 
+CA.Asthma <- full_join(Asthma.Adults.County, Asthma.Children.County)
+write.csv(CA.Asthma, row.names = FALSE, 
+          file ="../Data/Processed/TrackingCA_Asthma_AdultsChildren_Processed.csv")
+CA.Asthma.gathered <- gather(CA.Asthma, "Age.group", "Incidence", Mean.Incidence.Adults:Mean.Incidence.Children)
+
+```
+
+
+```{r echo=FALSE, fig.cap="Frequency of asthma-related ER visits of daily air quality index (AQI) values for children and adults across counties in California from 2013 to 2017.", warning=FALSE}
+
+# Asthma frequency polygon
+Asthma.frequency <- ggplot(CA.Asthma.gathered) + 
+  geom_freqpoly(aes(x =Incidence, color = Age.group)) + 
+  labs ( x = "Asthma-Related ER Visits Per 10,000 People") + 
+  scale_color_discrete (name = "Age Group", labels = c("Adults", "Children"))
+print (Asthma.frequency)
+```
+
+
+## Demographics dataset
+
+In examining demographics for XX counties in California, counties generally have a low percentage of African American residents and a much higher percentage of Hispanic residents; a median household income clustering between 40,000 and 75,000; and are more rural than urban.
+
+```{r}
+Demographics <- read.csv ("../Data/Raw/Demographics/CountyHealthRankings_CA_2019_filtered_raw.csv")
+```
+
+```{r echo=FALSE, fig.cap="Frequency of median household income, percent African American, percent rural, and percent Hispanic across counties in California from 2013 to 2017.", warning=FALSE}
+MHI.frequency <- ggplot(Demographics) +
+  geom_freqpoly(aes(x = Median.Household.Income), bins = 15) +
+  xlab("Median Household Income")
+
+Black.freqpoly<- ggplot(Demographics) +
+  geom_freqpoly(aes(x = Percent.African.American), bins = 15) +
+  xlab("Percent African American")
+
+Rural.freqpoly<- ggplot(Demographics) +
+  geom_freqpoly(aes(x = Percent.Rural), bins = 15) + 
+  xlab("Percent Rural")
+
+Hispanic.freqpoly<- ggplot(Demographics) +
+  geom_freqpoly(aes(x = Percent.Hispanic), bins = 15) + 
+  xlab("Percent Hispanic")
+
+
+# Combine frequency polygrams into one graphic. 
+plot_grid(MHI.frequency, Black.freqpoly, Rural.freqpoly, Hispanic.freqpoly, nrow = 2, align = 'h', rel_heights = c(1.25, 1))
+
+
+
+```
 
 \newpage
 
@@ -366,6 +489,186 @@ print(Airpollution.boxplot)
 Insert visualizations and text describing your main analyses. Format your R chunks so that graphs are displayed but code and other output is not displayed. Instead, describe the results of any statistical tests in the main text (e.g., "Variable x was significantly different among y groups (ANOVA; df = 300, F = 5.55, p < 0.0001)"). Each paragraph, accompanied by one or more visualizations, should describe the major findings and how they relate to the question and hypotheses. Divide this section into subsections, one for each research question.
 
 Each figure should be accompanied by a caption, and each figure should be referenced within the text
+
+## Time Series Analysis
+
+NO2, O3 and PM2.5 were evaluated in a time series analysis for the four key sites identified in California (Figure XX). The dashed lines separate out the AQI categories into good, moderate, and unhealthy for sensitive groups. San Francisco appears to have the lowest levels of pollution, whereas O3 and PM2.5 levels for both Bakersfield and Fresno have reached the unhealthy level. 
+
+In performing seasonal Mann-Kendall tests to these time series, it was observed that there are some trends for the pollutants beyond seasonal trends. 
+
+For **Bakersfield**, there is a decreasing overall trend for NO2 (seasonal Mann-Kendall, z= -2.41, p value = 0.016), a decreasing overall trend for PM2.5 (seasonal Mann-Kendall, z = -3.46, p-value < 0.001) and no significant trend for O3 beyond seasonal trends over the period 2013-2017. 
+
+For **Fresno**, there is no significant trend for NO2, O3, or PM2.5 beyond seasonal trends over the period 2013-2017. 
+
+For **Los Angeles**, there is a no significant trend for NO2 beyond seasonal trends, an overall increasing trend for O3 (seasonal Mann-Kendall, z = 3.18, p-value =.0001), and an overall decreasing trend and a decreasing trend in April for PM2.5 ( seasonal Mann-Kendall, z = -2.05, p-value = 0.040; z = -2.205, p-value= 0.027) over the period 2013-2017.
+
+For **San Francisco**, there is an overall decreasing trend for NO2 (seasonal Mann-Kendall, z = -2.192, p-value = 0.028), and no significant trend for O3 or PM2.5 over the period 2013-2017. 
+
+For the most part, there is either no trend or a decreasing trend for all pollutants across the sites, which is encouraging to find. The exception is O3 in LA, which has shown an increasing trend. However, this is not too much of a concern as of now, as ozone levels are bordering moderate but mostly in the good zone. 
+
+
+```{r}
+
+# Create subset with target counties and monthly AQI data. 
+EPAair.monthly <- EPAair %>%
+  group_by(Year, Month, Pollutant, COUNTY, Site.Name) %>%
+  na.omit() %>%
+  summarise(daily.meanaqi = mean(DAILY_AQI_VALUE))
+
+EPAair.monthly$Date <- as.Date(paste(EPAair.monthly$Year,
+                                     EPAair.monthly$Month, 
+                                                1, sep="-"), 
+                                          format = "%Y-%m-%d")
+```
+
+```{r echo=FALSE, fig.cap="Time series analysis of monthly AQI values for NO2, O3 and PM2.5 at four key sites in California from 2013 to 2017.", warning=FALSE}
+# Create datasets for each city: San Francisco, Bakersfield-California, Oakland, Los Angeles-North Main Street
+EPAair.Cities <- EPAair.monthly %>%
+  filter(Site.Name == "San Francisco" |
+         Site.Name == "Bakersfield-California"|
+         Site.Name =="Los Angeles-North Main Street"|
+         Site.Name == "Fresno - Garland")
+
+ggplot(EPAair.Cities) +
+  geom_line(aes(x = Date, y = daily.meanaqi, color= Pollutant)) +
+  geom_hline(yintercept = 100, lty = 2) +
+  geom_hline(yintercept = 50, lty = 2) + 
+  geom_text(x = as.Date("2017-05-01"), y = 45, label = "good") +
+  geom_text(x = as.Date("2017-11-01"), y = 95, label = "moderate", hjust = 1) +
+  geom_text(x = as.Date("2017-11-01"), y = 120, label = "unhealthy (sensitive groups)", hjust = 1) +
+  labs( x="", y = "AQI value") + 
+  scale_x_date(date_breaks = "1 year", date_label = "%Y") + 
+  theme(axis.text.x=element_text(angle=60, hjust=1)) + 
+  facet_wrap(vars(Site.Name))
+```
+```{r}
+# Time series analysis 
+# Spread data so that pollutants have their own columns
+
+## Bakersfield 
+EPAair.Bakersfield.spread <- EPAair.monthly %>%
+  filter(Site.Name == "Bakersfield-California") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+# Approximating missing data
+EPAair.Bakersfield.spread$NO2 <- na.approx(EPAair.Bakersfield.spread$NO2)
+EPAair.Bakersfield.spread$O3 <- na.approx(EPAair.Bakersfield.spread$O3)
+
+EPAair.Bakersfield.NO2.ts <- ts(EPAair.Bakersfield.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Bakersfield.NO2.trend <- smk.test(EPAair.Bakersfield.NO2.ts)
+Bakersfield.NO2.trend
+summary(Bakersfield.NO2.trend)
+# Significant overall decreasing trend for NO2
+
+EPAair.Bakersfield.O3.ts <- ts(EPAair.Bakersfield.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Bakersfield.O3.trend <- smk.test(EPAair.Bakersfield.O3.ts)
+Bakersfield.O3.trend
+summary(Bakersfield.O3.trend)
+# No significant trend for O3
+
+EPAair.Bakersfield.PM25.ts <- ts(EPAair.Bakersfield.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Bakersfield.PM25.trend <- smk.test(EPAair.Bakersfield.PM25.ts)
+Bakersfield.PM25.trend
+summary(Bakersfield.PM25.trend)
+# Significant overall decreasing trend for PM2.5
+
+
+## Fresno
+EPAair.Fresno.spread <- EPAair.monthly %>%
+  filter(Site.Name == "Fresno - Garland") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.Fresno.NO2.ts <- ts(EPAair.Fresno.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Fresno.NO2.trend <- smk.test(EPAair.Fresno.NO2.ts)
+Fresno.NO2.trend
+summary(Fresno.NO2.trend)
+# No significant trend for NO2
+
+EPAair.Fresno.O3.ts <- ts(EPAair.Fresno.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Fresno.O3.trend <- smk.test(EPAair.Fresno.O3.ts)
+Fresno.O3.trend
+summary(Fresno.O3.trend)
+# No significant trend for O3
+
+EPAair.Fresno.PM25.ts <- ts(EPAair.Fresno.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+Fresno.PM25.trend <- smk.test(EPAair.Fresno.PM25.ts)
+Fresno.PM25.trend
+summary(Fresno.PM25.trend)
+# No significant trend for PM2.5
+
+## Los Angeles
+EPAair.LA.spread <- EPAair.monthly %>%
+  filter(Site.Name == "Los Angeles-North Main Street") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.LA.NO2.ts <- ts(EPAair.LA.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+LA.NO2.trend <- smk.test(EPAair.LA.NO2.ts)
+LA.NO2.trend
+summary(LA.NO2.trend)
+# No significant trend for NO2
+
+EPAair.LA.O3.ts <- ts(EPAair.LA.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+LA.O3.trend <- smk.test(EPAair.LA.O3.ts)
+LA.O3.trend
+summary(LA.O3.trend)
+# Significant overall increasing trend for O3
+
+EPAair.LA.PM25.ts <- ts(EPAair.LA.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+
+LA.PM25.trend <- smk.test(EPAair.LA.PM25.ts)
+LA.PM25.trend
+summary(LA.PM25.trend)
+# Significant overall decreasing trend for PM2.5 and significant decreasing trned for April. 
+
+
+## San Francisco
+EPAair.SF.spread <- EPAair.monthly %>%
+  filter(Site.Name == "San Francisco") %>%
+  spread(Pollutant, daily.meanaqi) 
+
+EPAair.SF.NO2.ts <- ts(EPAair.SF.spread$NO2, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+SF.NO2.trend <- smk.test(EPAair.SF.NO2.ts)
+SF.NO2.trend
+summary(SF.NO2.trend)
+# Significatn overall decreasing trend for NO2
+
+EPAair.SF.O3.ts <- ts(EPAair.SF.spread$O3, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+SF.O3.trend <- smk.test(EPAair.SF.O3.ts)
+SF.O3.trend
+summary(SF.O3.trend)
+# No significant trend for O3
+
+EPAair.SF.PM25.ts <- ts(EPAair.SF.spread$PM2.5, frequency = 12, 
+                        start = c(2013, 1, 1), end = c(2017, 12, 31))
+SF.PM25.trend <- smk.test(EPAair.SF.PM25.ts)
+SF.PM25.trend
+summary(SF.PM25.trend)
+# No significant trend for PM2.5
+```
+
+
+## General Linear Model
+O3 and PM2.5 were evaluated in this general linear model analysis. NO2 was not chosen because as the exploratory analysis showed, NO2 levels are not as high as O3 and PM2.5 levels, and also there were more missing data for NO2. 
+
 
 
 ## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
