@@ -682,7 +682,7 @@ Bakersfield.plot <- ggplot(subset(EPAair.monthly,Site.Name == "Bakersfield-Calif
   geom_line(aes(x = Date, y = daily.meanaqi, color=Pollutant)) +
   geom_hline(yintercept = 100, lty = 2) +
   geom_hline(yintercept = 50, lty = 2) + 
-  geom_text(x = as.Date("2017-05-01"), y = 45, label = "good") +
+  geom_text(x = as.Date("2017-11-01"), y = 45, label = "good", hjust=1) +
   geom_text(x = as.Date("2017-11-01"), y = 95, label = "moderate", hjust = 1) +
   geom_text(x = as.Date("2017-11-01"), y = 120, label = "unhealthy (sensitive groups)", hjust = 1) +
   labs( x="", y = "AQI value", color ="") + 
@@ -704,7 +704,7 @@ Fresno.plot <- ggplot(subset(EPAair.monthly,Site.Name == "Fresno - Garland")) +
   geom_line(aes(x = Date, y = daily.meanaqi, color=Pollutant)) +
   geom_hline(yintercept = 100, lty = 2) +
   geom_hline(yintercept = 50, lty = 2) + 
-  geom_text(x = as.Date("2017-05-01"), y = 45, label = "good") +
+  geom_text(x = as.Date("2017-11-01"), y = 45, label = "good", hjust=1) +
   geom_text(x = as.Date("2017-11-01"), y = 95, label = "moderate", hjust = 1) +
   geom_text(x = as.Date("2017-11-01"), y = 120, label = "unhealthy (sensitive groups)", hjust = 1) +
   labs( x="", y = "AQI value", color="") + 
@@ -730,7 +730,7 @@ LA.plot <- ggplot(subset(EPAair.monthly,Site.Name == "Los Angeles-North Main Str
   geom_line(aes(x = Date, y = daily.meanaqi, color=Pollutant)) +
   geom_hline(yintercept = 100, lty = 2) +
   geom_hline(yintercept = 50, lty = 2) + 
-  geom_text(x = as.Date("2017-05-01"), y = 45, label = "good") +
+  geom_text(x = as.Date("2017-11-01"), y = 45, label = "good", hjust=1) +
   geom_text(x = as.Date("2017-11-01"), y = 95, label = "moderate", hjust = 1) +
   geom_text(x = as.Date("2017-11-01"), y = 120, label = "unhealthy (sensitive groups)", hjust = 1) +
   labs( x="", y = "AQI value", color="") + 
@@ -754,7 +754,7 @@ SF.plot <- ggplot(subset(EPAair.monthly,Site.Name == "San Francisco")) +
   geom_line(aes(x = Date, y = daily.meanaqi, color=Pollutant)) +
   geom_hline(yintercept = 100, lty = 2) +
   geom_hline(yintercept = 50, lty = 2) + 
-  geom_text(x = as.Date("2017-05-01"), y = 45, label = "good") +
+  geom_text(x = as.Date("2017-11-01"), y = 45, label = "good", hjust=1) +
   geom_text(x = as.Date("2017-11-01"), y = 95, label = "moderate", hjust = 1) +
   geom_text(x = as.Date("2017-11-01"), y = 120, label = "unhealthy (sensitive groups)", hjust = 1) +
   labs( x="", y = "AQI value", color="") + 
@@ -799,9 +799,9 @@ Additionally, a few demographic variables were also evaluated. **Median househol
 
 A multiple linear regression was run to predict asthma-related emergency room visitation rates in children while accounting for the explanatory variables described previously. 
 
-The most parsimonious model includes the variables O3, percent African American, percent Hispanic, percent rural and percent smokers. This model has an adjusted R2 of .66, with df = 159 and p <.001.
+The most parsimonious model includes the variables **O3**, **percent African American**, **percent Hispanic**, **percent rural** and **percent smokers** (linear regression, adjusted R2 = .66, df = 159 and p-value = <.001).
 
-This model specifies that holding all other variables constant, for every unit increase in the AQI for O3, the ER visitiation rate decreases by .67. For every percent increase in African American populations, ER visitation rate increases by 5.3. For every percent increase in Hispanic populations, the ER visitation rate increase by 1.2. For every percent increase in smokers, the ER visitations rate increases by 2.9.
+According to this model, holding all other variables constant, for every unit increase in the AQI for O3, the ER visitiation rate decreases by .67. For every percent increase in African American populations, ER visitation rate increases by 5.3. For every percent increase in Hispanic populations, the ER visitation rate increase by 1.2. For every percent increase in rural areas, the ER visitation rate increases by 1.2. For every percent increase in smokers, the ER visitations rate increases by 2.9.
 
 ```{r warning=FALSE, include=FALSE}
 # Convert data to yearly data
@@ -861,9 +861,9 @@ print(O3.children.plot.african)
 
 A multiple linear regression was run to predict asthma-related emergency room visitation rates in adults while accounting for the explanatory variables described previously. 
 
-The most parsimonious model includes the variables O3, percent African American and percent smokers. This model has an adjusted R2 of .59, with df = 161 and p <.001.
+The most parsimonious model includes the variables **O3**, **percent African American** and **percent smokers** (linear regression, adjusted R2 =.59, df = 161, p-value <.001).
 
-This model specifies that holding all other variables constant, for every unit increase in the AQI for O3, the ER visitiation rate decreases by .41. For every percent increase in African American populations, the ER visitation rate increases by 2.4. For every percent increase in smokers, the ER visitations rate increases by 5.3.
+According to this model, holding all other variables constant, for every unit increase in the AQI for O3, the ER visitiation rate decreases by .41. For every percent increase in African American populations, the ER visitation rate increases by 2.4. For every percent increase in smokers, the ER visitations rate increases by 5.3.
 
 
 ```{r echo=FALSE, fig.cap="Annual average O3 AQI values, percent smokers, and asthma-related ER visitation rates for adults across 52 counties in California from 2013 to 2017", warning=FALSE}
@@ -965,7 +965,7 @@ The time series analysis from this study suggest that the most part, there is ei
 
 ## **Question 2:** How is asthma incidence in California impacted by O3 and PM2.5 levels, accounting for socioeconomic variables? Is this relationship different in children compared to adults? 
 
-Findings from this study suggest that asthma incidence in both children and adults are impacted by *O3 concentration levels*, *percent African Americans*, *percent rural* and *percent smokers* in each county. However, incidence in children is more impacted by race (such as *percent African American* and *percent Hispanic* in each county) when compared to incidence in adults. On the other hand, asthma incidence in adults is more sensitive to *percent smokers* in each county. 
+Findings from this study suggest that asthma incidence in both children and adults are impacted by **O3**, **percent African Americans** and **percent smokers** in each county. However, incidence in children is more impacted by race (such as **percent African American** and **percent Hispanic**) and **percent rural** in each county when compared to incidence in adults. On the other hand, asthma incidence in adults is more sensitive to **percent smokers** in each county. 
 
 Surprisingly, PM2.5 was not found to be a significant variable in our models. Additionally, although O3 was a significant variable, it has a slightly inverse relationship with asthma incidence, which is contrary to what was expected. One explanation is that because air pollution levels are generally in the healthy range in California, their impacts on asthma incidence are negligible when compared to the impacts of socioeconomic and racial variables. There also are likely temporal, spatial and other types of variables which were left out in the model, which can cause omitted variable bias. 
 

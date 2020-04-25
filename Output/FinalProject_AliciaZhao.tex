@@ -476,7 +476,7 @@ values that are above 50.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-9-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-9-1.pdf}
 \caption{Frequency of daily AQI values in California from 2013 to 2017.}
 \end{figure}
 
@@ -492,7 +492,7 @@ and PM2.5 are generally in this range.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-10-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-10-1.pdf}
 \caption{Boxplots of daily AQI values in four key sites from 2013 to
 2017.}
 \end{figure}
@@ -509,7 +509,7 @@ a right skew.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-12-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-12-1.pdf}
 \caption{Frequency of asthma-related ER visitation rates for children
 and adults in California from 2013 to 2017.}
 \end{figure}
@@ -527,7 +527,7 @@ areas (Figure 4).
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-14-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-14-1.pdf}
 \caption{Frequency of median household income, percent African American,
 percent rural, and percent Hispanic across counties in California from
 2013 to 2017.}
@@ -568,7 +568,7 @@ trend for O3 beyond seasonal trends over the period 2013-2017.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-17-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-17-1.pdf}
 \caption{Time series analysis of monthly AQI values in Bakersfield, CA
 from 2013 to 2017.}
 \end{figure}
@@ -583,7 +583,7 @@ trends over the period 2013-2017.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-18-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-18-1.pdf}
 \caption{Time series analysis of monthly AQI values in Fresno, CA from
 2013 to 2017.}
 \end{figure}
@@ -601,7 +601,7 @@ z = -2.205, p-value= 0.027) over the period 2013-2017.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-19-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-19-1.pdf}
 \caption{Time series analysis of monthly AQI values in Los Angeles, CA
 from 2013 to 2017.}
 \end{figure}
@@ -617,7 +617,7 @@ the period 2013-2017.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-20-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-20-1.pdf}
 \caption{Time series analysis of monthly AQI values in San Francisco, CA
 from 2013 to 2017.}
 \end{figure}
@@ -674,20 +674,23 @@ A multiple linear regression was run to predict asthma-related emergency
 room visitation rates in children while accounting for the explanatory
 variables described previously.
 
-The most parsimonious model includes the variables O3, percent African
-American, percent Hispanic, percent rural and percent smokers. This
-model has an adjusted R2 of .66, with df = 159 and p \textless{}.001.
+The most parsimonious model includes the variables \textbf{O3},
+\textbf{percent African American}, \textbf{percent Hispanic},
+\textbf{percent rural} and \textbf{percent smokers} (linear regression,
+adjusted R2 = .66, df = 159 and p-value = \textless{}.001).
 
-This model specifies that holding all other variables constant, for
-every unit increase in the AQI for O3, the ER visitiation rate decreases
-by .67. For every percent increase in African American populations, ER
+According to this model, holding all other variables constant, for every
+unit increase in the AQI for O3, the ER visitiation rate decreases by
+.67. For every percent increase in African American populations, ER
 visitation rate increases by 5.3. For every percent increase in Hispanic
 populations, the ER visitation rate increase by 1.2. For every percent
-increase in smokers, the ER visitations rate increases by 2.9.
+increase in rural areas, the ER visitation rate increases by 1.2. For
+every percent increase in smokers, the ER visitations rate increases by
+2.9.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-22-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-22-1.pdf}
 \caption{Annual average O3 AQI values, percent smokers, and
 asthma-related ER visitation rates for children across 52 counties in
 California from 2013 to 2017.}
@@ -695,7 +698,7 @@ California from 2013 to 2017.}
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-23-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-23-1.pdf}
 \caption{Annual average O3 AQI values, percent African American, and
 asthma-related ER visitation rates for children across 52 counties in
 California from 2013 to 2017.}
@@ -711,19 +714,19 @@ A multiple linear regression was run to predict asthma-related emergency
 room visitation rates in adults while accounting for the explanatory
 variables described previously.
 
-The most parsimonious model includes the variables O3, percent African
-American and percent smokers. This model has an adjusted R2 of .59, with
-df = 161 and p \textless{}.001.
+The most parsimonious model includes the variables \textbf{O3},
+\textbf{percent African American} and \textbf{percent smokers} (linear
+regression, adjusted R2 =.59, df = 161, p-value \textless{}.001).
 
-This model specifies that holding all other variables constant, for
-every unit increase in the AQI for O3, the ER visitiation rate decreases
-by .41. For every percent increase in African American populations, the
-ER visitation rate increases by 2.4. For every percent increase in
-smokers, the ER visitations rate increases by 5.3.
+According to this model, holding all other variables constant, for every
+unit increase in the AQI for O3, the ER visitiation rate decreases by
+.41. For every percent increase in African American populations, the ER
+visitation rate increases by 2.4. For every percent increase in smokers,
+the ER visitations rate increases by 5.3.
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-24-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-24-1.pdf}
 \caption{Annual average O3 AQI values, percent smokers, and
 asthma-related ER visitation rates for adults across 52 counties in
 California from 2013 to 2017}
@@ -731,7 +734,7 @@ California from 2013 to 2017}
 
 \begin{figure}
 \centering
-\includegraphics{Project_Template_files/figure-latex/unnamed-chunk-25-1.pdf}
+\includegraphics{FinalProject_AliciaZhao_files/figure-latex/unnamed-chunk-25-1.pdf}
 \caption{Annual average O3 AQI values, percent African American, and
 asthma-related ER visitation rates for adults across 52 counties in
 California from 2013 to 2017}
@@ -763,13 +766,13 @@ compared to
 adults?}{Question 2: How is asthma incidence in California impacted by O3 and PM2.5 levels, accounting for socioeconomic variables? Is this relationship different in children compared to adults?}}\label{question-2-how-is-asthma-incidence-in-california-impacted-by-o3-and-pm2.5-levels-accounting-for-socioeconomic-variables-is-this-relationship-different-in-children-compared-to-adults}}
 
 Findings from this study suggest that asthma incidence in both children
-and adults are impacted by \emph{O3 concentration levels}, \emph{percent
-African Americans}, \emph{percent rural} and \emph{percent smokers} in
-each county. However, incidence in children is more impacted by race
-(such as \emph{percent African American} and \emph{percent Hispanic} in
-each county) when compared to incidence in adults. On the other hand,
-asthma incidence in adults is more sensitive to \emph{percent smokers}
-in each county.
+and adults are impacted by \textbf{O3}, \textbf{percent African
+Americans} and \textbf{percent smokers} in each county. However,
+incidence in children is more impacted by race (such as \textbf{percent
+African American} and \textbf{percent Hispanic}) and \textbf{percent
+rural} in each county when compared to incidence in adults. On the other
+hand, asthma incidence in adults is more sensitive to \textbf{percent
+smokers} in each county.
 
 Surprisingly, PM2.5 was not found to be a significant variable in our
 models. Additionally, although O3 was a significant variable, it has a
